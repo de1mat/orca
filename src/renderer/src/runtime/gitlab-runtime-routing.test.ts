@@ -209,14 +209,18 @@ describe('routedGitLab local vs remote transport', () => {
     )
   })
 
-  it('returns an empty assignable-user list for a remote repo without an RPC', async () => {
-    const result = await routedGitLab.listAssignableUsers({
+  it('relays assignable-user lookups to the runtime host', async () => {
+    await routedGitLab.listAssignableUsers({
       repoPath: '/repo',
       repoId: 'repo-1',
       sourceContext: gitlabContext(RUNTIME_HOST)
     })
-    expect(result).toEqual([])
-    expect(callRuntimeRpc).not.toHaveBeenCalled()
+    expect(callRuntimeRpc).toHaveBeenCalledWith(
+      ENV,
+      'gitlab.listAssignableUsers',
+      { repo: 'id:repo-1' },
+      { timeoutMs: 30_000 }
+    )
     expect(gl.listAssignableUsers).not.toHaveBeenCalled()
   })
 
@@ -261,6 +265,12 @@ describe('routedGitLab remote method-name and arg wiring', () => {
       expected: { iid: 2, type: 'issue' }
     },
     { method: 'listLabels', rpc: 'gitlab.listLabels', args: {}, expected: {} },
+    {
+      method: 'listAssignableUsers',
+      rpc: 'gitlab.listAssignableUsers',
+      args: {},
+      expected: {}
+    },
     {
       method: 'updateMR',
       rpc: 'gitlab.updateMR',

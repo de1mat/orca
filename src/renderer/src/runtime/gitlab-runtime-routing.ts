@@ -111,6 +111,7 @@ const RPC = {
   todos: 'gitlab.todos',
   workItemDetails: 'gitlab.workItemDetails',
   listLabels: 'gitlab.listLabels',
+  listAssignableUsers: 'gitlab.listAssignableUsers',
   updateMR: 'gitlab.updateMR',
   jobTrace: 'gitlab.jobTrace',
   retryJob: 'gitlab.retryJob',
@@ -142,14 +143,11 @@ export const routedGitLab = {
     dispatch(window.api.gl.workItemDetails, RPC.workItemDetails, args),
   listLabels: (args: Parameters<GL['listLabels']>[0]) =>
     dispatch(window.api.gl.listLabels, RPC.listLabels, args),
-  // Why: the host exposes no gitlab.listAssignableUsers RPC (the web client
-  // returns [] too); degrade to an empty picker for remote repos rather than error.
-  listAssignableUsers: (
-    args: Parameters<GL['listAssignableUsers']>[0]
-  ): ReturnType<GL['listAssignableUsers']> =>
-    getGitLabTaskRuntimeTarget(args).kind === 'environment'
-      ? (Promise.resolve([]) as ReturnType<GL['listAssignableUsers']>)
-      : window.api.gl.listAssignableUsers(args),
+  // Why: an older host without gitlab.listAssignableUsers rejects with
+  // method_not_found; the reviewer-picker caller catches that and shows an empty
+  // list, so a mixed-version client degrades gracefully without a capability gate.
+  listAssignableUsers: (args: Parameters<GL['listAssignableUsers']>[0]) =>
+    dispatch(window.api.gl.listAssignableUsers, RPC.listAssignableUsers, args),
   updateMR: (args: Parameters<GL['updateMR']>[0]) =>
     dispatch(window.api.gl.updateMR, RPC.updateMR, args),
   // Why: raw CI traces routinely exceed the runtime RPC frame cap, so ask the

@@ -210,6 +210,11 @@ export const GITLAB_METHODS: RpcMethod[] = [
     handler: async (params, { runtime }) => runtime.listGitLabRepoLabels(params.repo)
   }),
   defineMethod({
+    name: 'gitlab.listAssignableUsers',
+    params: RepoSelector,
+    handler: async (params, { runtime }) => runtime.listGitLabRepoAssignableUsers(params.repo)
+  }),
+  defineMethod({
     name: 'gitlab.createIssue',
     params: CreateIssue,
     handler: async (params, { runtime }) =>
